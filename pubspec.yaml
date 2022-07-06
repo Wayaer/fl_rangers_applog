@@ -1,0 +1,26 @@
+name: fl_rangers_applog
+description: flutter plugin for RangersAppLog.
+version: 0.0.1
+repository: https://github.com/Wayaer/fl_rangers_applog.git
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: ">=2.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+
+  plugin:
+    platforms:
+      android:
+        package: com.fl.rangers.app.log
+        pluginClass: FlRangersAppLogPlugin
+      ios:
+        pluginClass: FlRangersAppLogPlugin

@@ -1,3 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.fl.rangers.app.log">
-</manifest>
+<manifest package="com.fl.rangers.app.log" />

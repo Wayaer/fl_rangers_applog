@@ -1,5 +1,5 @@
 name: example
-description: Demonstrates how to use the rangers_applog_flutter_plugin plugin.
+description: Demonstrates how to use the fl_rangers_applog plugin.
 publish_to: 'none'
 
 environment:
@@ -13,8 +13,7 @@ dependencies:
     path: ../
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  flutter_lints: ^1.0.4
 
 flutter:
   uses-material-design: true

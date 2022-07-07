@@ -1,42 +1,20 @@
 #import "FlRangersAppLogPlugin.h"
-#import <RangersAppLog/RangersAppLog.h>
 #import <RangersAppLog/RangersAppLogCore.h>
 
-
-static inline id setNSNullToNil(id value, Class target){
-    if (value == NSNull.null) {
-        return nil;
-    }
-    if (![value isKindOfClass:target]) {
-        return nil;
-    }
-    return value;
-}
-
 @interface FlRangersAppLogPlugin ()
-
-@property (nonatomic, strong) FlutterEventSink eventSink;
-@property (nonatomic, strong) NSMutableSet *eventCache;
-
 @end
-
 
 @implementation FlRangersAppLogPlugin
 
-// 在应用didFinishLaunching时被调用
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"com.fl.rangers.app.log"
++ (void)registerWithRegistrar:(NSObject <FlutterPluginRegistrar> *)registrar {
+    FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:@"com.fl.rangers.app.log"
                                                                 binaryMessenger:[registrar messenger]];
-    
-    FlRangersAppLogPlugin* instance = [FlRangersAppLogPlugin new];
+    FlRangersAppLogPlugin *instance = [[FlRangersAppLogPlugin alloc] init];
+    instance.channel = channel;
     [registrar addMethodCallDelegate:instance channel:channel];
-    
-    FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"com.fl.rangers.app.log/event" binaryMessenger:[registrar messenger]];
-    [eventChannel setStreamHandler:instance];
 }
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -45,160 +23,79 @@ static inline id setNSNullToNil(id value, Class target){
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(onABTestVidsChanged:)
                                                      name:BDAutoTrackNotificationABTestSuccess object:nil];
-        _eventCache = [NSMutableSet new];
     }
     return self;
 }
 
-#pragma mark Method Channel
+- (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    NSString *methodName = call.method;
-    NSDictionary *arguments = setNSNullToNil(call.arguments, [NSDictionary class]);
-    
-    if ([methodName isEqualToString:@"sdkVersion"]) {
-        result([BDAutoTrack sdkVersion]);
-    }
-    else if ([methodName isEqualToString:@"initRangersAppLog"]) {
-        NSString *appID = setNSNullToNil([arguments valueForKey:@"appid"], [NSString class]);
-        NSString *channel = setNSNullToNil([arguments valueForKey:@"channel"], [NSString class]);
-        NSNumber *enableAB = setNSNullToNil([arguments valueForKey:@"enable_ab"], [NSNumber class]);
-        NSNumber *enableEncrypt = setNSNullToNil([arguments valueForKey:@"enable_encrypt"], [NSNumber class]);
-        NSNumber *enableDebugLog = setNSNullToNil([arguments valueForKey:@"enable_log"], [NSNumber class]);
-        NSString *host = setNSNullToNil([arguments valueForKey:@"host"], [NSString class]);
-        
+    if ([@"initialize" isEqualToString:call.method]) {
+        NSString *appID = call.arguments[@"appId"];
+        NSString *channel = call.arguments[@"channel"];
+        //        BOOL enableAB = call.arguments[@"enable_ab"];
+        BOOL enableEncrypt = [call.arguments[@"enable_encrypt"] boolValue];
+        BOOL enableDebugLog = [call.arguments[@"enable_log"] boolValue];
+        NSString *host = call.arguments[@"host"];
         BDAutoTrackConfig *config = [BDAutoTrackConfig configWithAppID:appID];
         if ([channel isKindOfClass:NSString.class] && channel.length > 0) {
             config.channel = channel;
         }
-        config.logNeedEncrypt = [enableEncrypt boolValue];
-        //        config.abEnable = [enableAB boolValue];
-        config.showDebugLog = [enableDebugLog boolValue];
+        config.logNeedEncrypt = enableEncrypt;
+        //        config.abEnable = enableAB;
+        config.showDebugLog = enableDebugLog;
         config.serviceVendor = BDAutoTrackServiceVendorCN;
 #if DEBUG
         config.showDebugLog = YES;
-        config.logger = ^(NSString * log) {
-            NSLog(@"flutter-plugin applog %@",log);
+        config.logger = ^(NSString *log) {
+            NSLog(@"flutter-plugin applog %@", log);
         };
 #endif
         if ([host isKindOfClass:NSString.class] && host.length > 0) {
-            [BDAutoTrack setRequestURLBlock:^NSString * _Nullable(BDAutoTrackServiceVendor vendor, BDAutoTrackRequestURLType requestURLType) {
+            [BDAutoTrack setRequestURLBlock:^NSString *_Nullable(BDAutoTrackServiceVendor vendor, BDAutoTrackRequestURLType requestURLType) {
                 return host;
             }];
         }
         [BDAutoTrack startTrackWithConfig:config];
-        result(nil);
-    }
-    else if ([methodName isEqualToString:@"onEventV3"]) {
-        // NSLog(@"%@", call.arguments);
-        NSString *event = setNSNullToNil([arguments valueForKey:@"event"], [NSString class]);
-        NSDictionary *param = [arguments valueForKey:@"param"];
-        BOOL ret = [BDAutoTrack  eventV3:event params:param];
-        result(nil);
-    }
-    else if ([methodName isEqualToString:@"getDeviceId"]) {
+        result(@(YES));
+    } else if ([call.method isEqualToString:@"getDeviceId"]) {
         result([BDAutoTrack rangersDeviceID]);
-    }
-    
-    /* Custom Header */
-    else if ([methodName isEqualToString:@"setHeaderInfo"]) {
-        NSDictionary *customHeader = setNSNullToNil([arguments valueForKey:@"customHeader"], [NSDictionary class]);
-        
-        for (NSString *key in customHeader) {
-            if ([key isKindOfClass:NSString.class]) {
-                NSObject *val = customHeader[key];
-                [BDAutoTrack setCustomHeaderBlock:^NSDictionary<NSString *,id> * _Nonnull{
-                    return @{key:val};
-                }];
-            }
-        }
-    }
-    
-    //    else if ([methodName isEqualToString:@"removeHeaderInfo"]) {
-    //        NSString *key = setNSNullToNil([arguments valueForKey:@"key"], [NSString class]);
-    //        [BDAutoTrack  removeCustomHeaderValueForKey:key];
-    //    }
-    
-    /* Login and Logout */
-    else if ([methodName isEqualToString:@"setUserUniqueId"]) {
-        NSString *userUniqueID = setNSNullToNil([arguments valueForKey:@"uuid"], [NSString class]);
-        [BDAutoTrack setCurrentUserUniqueID:userUniqueID];
-    }
-    
-    /* AB Test */
-    else if ([methodName isEqualToString:@"getAbSdkVersion"]) {
-        NSString *vids = [BDAutoTrack allAbVids];
-        result(vids);
-    }
-    else if ([methodName isEqualToString:@"getAllAbTestConfig"]) {
-        NSDictionary *allConfigs = [BDAutoTrack  allABTestConfigs];
-        result(allConfigs);
-    }
-    else if ([methodName isEqualToString:@"getABTestConfigValueForKey"]) {
-        NSString *key = setNSNullToNil([arguments valueForKey:@"key"], [NSString class]);
-        NSObject *defaultVal = setNSNullToNil([arguments valueForKey:@"default"], [NSObject class]);
-        id val = [BDAutoTrack  ABTestConfigValueForKey:key defaultValue:defaultVal];
-        result(val);
-    }
-    
-    /* Profile */
-    //    else if ([methodName isEqualToString:@"profileSet"]) {
-    //        NSDictionary *profileDict = setNSNullToNil([arguments valueForKey:@"profileDict"], [NSDictionary class]);
-    //        [BDAutoTrack  profileSet:profileDict];
-    //    }
-    //    else if ([methodName isEqualToString:@"profileSetOnce"]) {
-    //        NSDictionary *profileDict = setNSNullToNil([arguments valueForKey:@"profileDict"], [NSDictionary class]);
-    //        [BDAutoTrack  profileSetOnce:profileDict];
-    //    }
-    //    else if ([methodName isEqualToString:@"profileUnset"]) {
-    //        NSString *key = setNSNullToNil([arguments valueForKey:@"key"], [NSString class]);
-    //        [[BDAutoTrack sharedTrack] profileUnset:key];
-    //    }
-    //    else if ([methodName isEqualToString:@"profileIncrement"]) {
-    //        NSDictionary *profileDict = setNSNullToNil([arguments valueForKey:@"profileDict"], [NSDictionary class]);
-    //        [[BDAutoTrack sharedTrack] profileIncrement:profileDict];
-    //    }
-    //    else if ([methodName isEqualToString:@"profileAppend"]) {
-    //        NSDictionary *profileDict = setNSNullToNil([arguments valueForKey:@"profileDict"], [NSDictionary class]);
-    //        [[BDAutoTrack sharedTrack] profileAppend:profileDict];
-    //    }
-    else {
+    } else if ([call.method isEqualToString:@"getAbSdkVersion"]) {
+        result([BDAutoTrack allAbVids]);
+    } else if ([call.method isEqualToString:@"getAllAbTestConfig"]) {
+        result([BDAutoTrack allABTestConfigs]);
+    } else if ([call.method isEqualToString:@"getABTestConfigValueForKey"]) {
+        NSString *key = call.arguments[@"key"];
+        NSString *defaultStr = call.arguments[@"default"];
+        [BDAutoTrack ABTestConfigValueForKey:key defaultValue:defaultStr];
+        result(@"");
+    } else if ([call.method isEqualToString:@"onEventV3"]) {
+        NSString *event = call.arguments[@"event"];
+        NSDictionary *param = call.arguments[@"param"];
+        BOOL ret = [BDAutoTrack eventV3:event params:param];
+        result(@(ret));
+    } else if ([call.method isEqualToString:@"setUserUniqueId"]) {
+        [BDAutoTrack setCurrentUserUniqueID:call.arguments];
+        result(@(YES));
+    } else if ([call.method isEqualToString:@"setHeaderInfo"]) {
+        NSDictionary *customHeader = call.arguments;
+        [BDAutoTrack setCustomHeaderBlock:^NSDictionary<NSString *, id> *_Nonnull {
+            return customHeader;
+        }];
+        result(@(YES));
+    } else if ([call.method isEqualToString:@"removeHeaderInfo"]) {
+        //        NSString *key = call.arguments;
+        result(@(YES));
+    } else {
         result(FlutterMethodNotImplemented);
     }
 }
 
-#pragma mark Event Channel
-
-- (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
-                                       eventSink:(FlutterEventSink)events {
-    self.eventSink = events;
-    for (id event in self.eventCache) {
-        events(event);
-    }
-    [self.eventCache removeAllObjects];
-    return nil;
+- (void)onABTestSuccess:(NSNotification *)notification {
+    [_channel invokeMethod:@"onABTestSuccess" arguments:notification.userInfo];
 }
 
-- (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
-    return nil;
-}
-
-- (void)onABTestSuccess:(NSNotification *)noti {
-    [self sendEvent:@"onABTestSuccess"];
-}
-
-- (void)onABTestVidsChanged:(NSNotification *)noti {
-    [self sendEvent:@"onABTestVidsChanged"];
-}
-
-- (void)sendEvent:(id _Nullable)event {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.eventSink) {
-            self.eventSink(event);
-        } else {
-            [self.eventCache addObject:event];
-        }
-    });
+- (void)onABTestVidsChanged:(NSNotification *)notification {
+    [_channel invokeMethod:@"onABTestVidsChanged" arguments:notification.userInfo];
 }
 
 @end

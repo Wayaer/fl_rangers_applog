@@ -14,7 +14,7 @@ A new flutter plugin project.
   s.dependency 'Flutter'
   s.dependency 'RangersAppLog'
   s.frameworks = 'Foundation','UIKit','JavaScriptCore','WebKit','CoreFoundation','CoreTelephony','Security','SystemConfiguration','AdSupport'
-  s.libraries = 'z','lite3'
+  s.libraries = 'z','sqlite3'
   s.requires_arc = true
   s.platform = :ios, '10.0'
   s.static_framework = true

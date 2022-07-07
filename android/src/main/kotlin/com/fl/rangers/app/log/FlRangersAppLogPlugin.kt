@@ -32,7 +32,7 @@ class FlRangersAppLogPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "initRangersAppLog" -> {
+            "initialize" -> {
                 val initConfig = InitConfig(
                     call.argument("appId")!!, call.argument("channel")!!
                 )
@@ -117,7 +117,7 @@ class FlRangersAppLogPlugin : FlutterPlugin, MethodCallHandler {
 
         override fun onRemoteConfigGet(b: Boolean, jsonObject: JSONObject) {}
         override fun onRemoteAbConfigGet(b: Boolean, jsonObject: JSONObject) {
-            channel.invokeMethod("onABTest", jsonObject.toString())
+            channel.invokeMethod("onABTestSuccess", jsonObject.toString())
         }
 
         override fun onAbVidsChange(s: String, s1: String) {

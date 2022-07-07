@@ -11,18 +11,17 @@ class _HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<_HomePage> {
-  String sdkVersion = 'Unknown';
   String did = 'Unknown';
   String listenText = 'Unknown';
   String deviceId = 'Unknown';
   String abSdkVersion = 'Unknown';
   dynamic abConfigValue;
-  Map<String, String>? allABConfigs;
+  Map<dynamic, dynamic>? allABConfigs;
 
   Future<void> _initAppLog() async {
     FlRangersAppLog.initialize("189693", "local_test");
-    _getABTestConfigValueForKey();
-    FlRangersAppLog.addHandler(onABTest: (value) {
+    // _getABTestConfigValueForKey();
+    FlRangersAppLog.addHandler(onABTestSuccess: (value) {
       listenText = "onABTest=$value";
       setState(() {});
     }, onABTestVidsChanged: (List<String>? value) {
@@ -102,7 +101,6 @@ class _HomePageState extends State<_HomePage> {
                 FlRangersAppLog.setUserUniqueId(uuid.toString());
                 uuid++;
               }),
-          ListTile(title: Text("RangersApplog SDK Version $sdkVersion")),
           ListTile(title: Text("Test call did $did "), onTap: _getDid),
           ListTile(
               title: const Text("Test call eventV3 "),

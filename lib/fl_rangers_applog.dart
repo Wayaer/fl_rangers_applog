@@ -37,18 +37,18 @@ class FlRangersAppLog {
       "enable_log": enableLog,
       "host": host
     };
-    return _channel.invokeMethod('initRangersAppLog', arg);
+    return _channel.invokeMethod('initialize', arg);
   }
 
   static void addHandler({
-    ABTestCallback? onABTest,
+    ABTestCallback? onABTestSuccess,
     AbVidChangeCallback? onABTestVidsChanged,
   }) {
     _channel.setMethodCallHandler(null);
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
-        case 'onABTest':
-          onABTest?.call(call.arguments);
+        case 'onABTestSuccess':
+          onABTestSuccess?.call(call.arguments);
           break;
         case 'onABTestVidsChanged':
           onABTestVidsChanged?.call(call.arguments);
@@ -77,8 +77,8 @@ class FlRangersAppLog {
   /// Note: Only avaliable on iOS!
   /// Usage example：
   /// Map<String, String> d = await FlRangersAppLogPlugin.getAllAbTestConfig();
-  static Future<Map<String, String>?> getAllAbTestConfig() =>
-      _channel.invokeMethod('getAllAbTestConfig');
+  static Future<Map<dynamic, dynamic>?> getAllAbTestConfig() =>
+      _channel.invokeMethod<Map<dynamic, dynamic>?>('getAllAbTestConfig');
 
   /// get the abConfigValue of the corresponding `key`
   /// @param key  String
@@ -120,19 +120,19 @@ class FlRangersAppLog {
   static Future<bool?> removeHeaderInfo(String key) =>
       _channel.invokeMethod('removeHeaderInfo', key);
 
-  /* Profile */
-  static Future<bool?> profileSet(Map<String, String> profileDict) =>
-      _channel.invokeMethod('profileSet', profileDict);
-
-  static Future<bool?> profileSetOnce(Map<String, String> profileDict) =>
-      _channel.invokeMethod('profileSetOnce', profileDict);
-
-  static Future<bool?> profileUnset(String key) =>
-      _channel.invokeMethod('profileUnset', key);
-
-  static Future<bool?> profileIncrement(Map<String, String> profileDict) =>
-      _channel.invokeMethod('profileIncrement', profileDict);
-
-  static Future<bool?> profileAppend(Map<String, String> profileDict) =>
-      _channel.invokeMethod('profileAppend', profileDict);
+// /* Profile */
+// static Future<bool?> profileSet(Map<String, String> profileDict) =>
+//     _channel.invokeMethod('profileSet', profileDict);
+//
+// static Future<bool?> profileSetOnce(Map<String, String> profileDict) =>
+//     _channel.invokeMethod('profileSetOnce', profileDict);
+//
+// static Future<bool?> profileUnset(String key) =>
+//     _channel.invokeMethod('profileUnset', key);
+//
+// static Future<bool?> profileIncrement(Map<String, String> profileDict) =>
+//     _channel.invokeMethod('profileIncrement', profileDict);
+//
+// static Future<bool?> profileAppend(Map<String, String> profileDict) =>
+//     _channel.invokeMethod('profileAppend', profileDict);
 }

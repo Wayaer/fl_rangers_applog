@@ -2,7 +2,7 @@ group 'com.fl.rangers.app.log'
 version '1.0'
 
 buildscript {
-    ext.kotlin_version = '1.6.21'
+    ext.kotlin_version = '1.7.0'
     repositories {
         google()
         mavenCentral()

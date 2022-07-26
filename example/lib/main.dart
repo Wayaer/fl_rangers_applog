@@ -7,7 +7,7 @@ void main() => runApp(MaterialApp(home: _HomePage()));
 
 class _HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  State<_HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<_HomePage> {
@@ -62,7 +62,7 @@ class _HomePageState extends State<_HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text('Fl Ranger AppLog example')),
-        body: ListView(children: <Widget>[
+        body: ListView(children: [
           ListTile(title: Text("init AppLog $listenText"), onTap: _initAppLog),
           ListTile(
               title: Text("Test get device_id $deviceId"), onTap: _getDeviceID),

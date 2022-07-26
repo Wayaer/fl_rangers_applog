@@ -109,18 +109,29 @@ class FlRangersAppLogPlugin : FlutterPlugin, MethodCallHandler {
 
 
     private class InnerDataObserver(private val channel: MethodChannel) : IDataObserver {
-        override fun onIdLoaded(s: String, s1: String, s2: String) {}
+        override fun onIdLoaded(p0: String?, p1: String?, p2: String?) {
+
+        }
+
         override fun onRemoteIdGet(
-            b: Boolean, s: String, s1: String, s2: String, s3: String, s4: String, s5: String
+            p0: Boolean,
+            p1: String?,
+            p2: String?,
+            p3: String?,
+            p4: String?,
+            p5: String?,
+            p6: String?
         ) {
         }
 
-        override fun onRemoteConfigGet(b: Boolean, jsonObject: JSONObject) {}
-        override fun onRemoteAbConfigGet(b: Boolean, jsonObject: JSONObject) {
-            channel.invokeMethod("onABTestSuccess", jsonObject.toString())
+        override fun onRemoteConfigGet(p0: Boolean, p1: JSONObject?) {
         }
 
-        override fun onAbVidsChange(s: String, s1: String) {
+        override fun onRemoteAbConfigGet(p0: Boolean, jsonObject: JSONObject?) {
+            channel.invokeMethod("onABTestSuccess", jsonObject?.toString())
+        }
+
+        override fun onAbVidsChange(s: String?, s1: String?) {
             channel.invokeMethod("onABTestVidsChanged", arrayListOf(s, s1));
         }
     }

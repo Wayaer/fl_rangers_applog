@@ -8,8 +8,7 @@ typedef AbVidChangeCallback = void Function(List<String>? value);
 class FlRangersAppLog {
   FlRangersAppLog._();
 
-  static const MethodChannel _channel =
-      const MethodChannel('com.fl.rangers.app.log');
+  static const MethodChannel _channel = MethodChannel('com.fl.rangers.app.log');
 
 /* 提示：可以到[Rangers官网](https://datarangers.com.cn/)查看更详细的文档
  * Note: Refer to more detailed docs at https://datarangers.com/
